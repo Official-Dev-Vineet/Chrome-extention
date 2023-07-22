@@ -1,0 +1,33 @@
+{
+    "manifest_version": 3,
+    "name": "Image Downloader",
+    "short_name": "Image Downloader",
+    "version": "1.0",
+    "description": "Chrome Extension",
+    "content_scripts": [
+        {
+            "matches": [
+                "<all_urls>"
+            ],
+            "js": [
+                "js/content.js"
+            ]
+        }
+    ],
+    "background": {
+        "service_worker": "js/background.js"
+    },
+    "action": {
+        "default_icon": "icons/icon.png",
+        "default_popup": "popup.html"
+    },
+    "icons": {
+        "16": "icons/icon16.png",
+        "48": "icons/icon48.png",
+        "128": "icons/icon128.png"
+    },
+    "permissions": [
+        "activeTab",
+        "scripting"
+    ]
+}
