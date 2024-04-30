@@ -11,18 +11,17 @@ downloadAll?.addEventListener("click", () => {
     const a = document.createElement("a");
     a.style.display = "none";
     a.href = element;
-    a.download = "todo-1.json";
+    a.download = "image.jpg"; // Update the default file name here
     document.body.appendChild(a);
     a.click();
     a.remove();
   });
 });
-// const theme switch
+
 theme?.addEventListener("click", () => {
-  document?.body.classList.toggle("dark-theme");
+  document.body.classList.toggle("dark-theme");
 });
 
-// inject script into browser
 getImageBtn?.addEventListener("click", async () => {
   const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
   chrome.scripting
@@ -33,20 +32,17 @@ getImageBtn?.addEventListener("click", async () => {
     .then((injectionResults) => {
       imageContainer.innerHTML = "";
       const result = injectionResults[0].result;
-      for (let i = 0; i < result.length; i++) {
-        if (result.length > 0) {
-          images.push(result[i]);
-          images.length > 0
-            ? (downloadAll.disabled = false)
-            : (downloadAll.disabled = true);
-          appendImages(result[i]);
-          getSize(); 
-        } else {
-          imageContainer.innerHTML = "No images found";
-        }
+      if (result && result.length > 0) {
+        result.forEach((image) => {
+          images.push(image);
+          appendImages(image);
+          getSize();
+        });
+        downloadAll.disabled = false;
+      } else {
+        imageContainer.innerHTML = "No images found";
+        downloadAll.disabled = true;
       }
-     
-      downloadImage();
     })
     .catch((err) => {
       imageContainer.innerHTML = `<h1 style='grid-column: 1/3; text-align: center'>Extension can't fetch images from this tab.</h1>`;
@@ -54,7 +50,6 @@ getImageBtn?.addEventListener("click", async () => {
     });
 });
 
-// get image from browser
 function getImageData() {
   let images = [];
   document.querySelectorAll("img").forEach((element) => {
@@ -67,8 +62,6 @@ function getImageData() {
 function appendImages(image) {
   const imageHolder = document.createElement("div");
   imageHolder.classList.add("image-holder");
-  const input = document.createElement("input");
-  input.type = "checkbox";
   const openBtn = document.createElement("button");
   openBtn.innerText = "Open";
   openBtn.title = "Open image in new tab";
@@ -78,20 +71,20 @@ function appendImages(image) {
   img.src = image;
   img.alt = image.slice(image.lastIndexOf("/") + 1);
   img.title = image.slice(image.lastIndexOf("/") + 1);
-  let fileDetails = document.createElement("div");
-  let fileExtension = image.slice(image.lastIndexOf(".") + 1,image.lastIndexOf(".") + 5);
+  let fileDetails = document.createElement("div"); // Initialize fileDetails
+  let fileExtension = image.slice(image.lastIndexOf(".") + 1, image.lastIndexOf(".") + 5);
   fileDetails.innerHTML = `<p>size:<span class="size"></span>  type= ${fileExtension} </p>`;
   imageHolder.appendChild(openBtn);
-  imageHolder.appendChild(input);
-  imageHolder.appendChild(fileDetails);
+  imageHolder.appendChild(fileDetails); // Append fileDetails to imageHolder
   imageHolder.appendChild(imgWrapper);
   imgWrapper.appendChild(img);
   imageContainer.appendChild(imageHolder);
-  // run extra function
+
   openBtn.addEventListener("click", () => {
     chrome.tabs.create({ url: image });
   });
 }
+
 function downloadImage() {
   document.querySelectorAll("img").forEach((img) => {
     img.addEventListener("click", () => {
@@ -99,22 +92,28 @@ function downloadImage() {
     });
   });
 }
+
 function downloadFile(img) {
   const a = document.createElement("a");
   a.style.display = "none";
   a.href = img.src;
-  a.download = img.src;
+  a.download = img.src.slice(img.src.lastIndexOf("/") + 1); // Use correct file name for downloading
   document.body.appendChild(a);
   a.click();
   a.remove();
 }
+
 function getSize() {
   const size = document.querySelectorAll(".images .size");
   const images = document.querySelectorAll(".images img");
   for (let i = 0; i < images.length; i++) {
-    let width = images[i].naturalWidth;
-    let height = images[i].naturalHeight;
-    size[i].innerHTML = `${width}x${height}`;
+    const img = new Image();
+    img.src = images[i].src;
+    img.onload = () => {
+      let width = img.naturalWidth;
+      let height = img.naturalHeight;
+      size[i].innerHTML = `${width}x${height}`;
+    }
   }
 }
-getSize();
+getSize(); // This should be called after appending images

@@ -6,7 +6,7 @@ document.querySelectorAll("img").forEach((element) => {
     a.style.display = "none";
     a.href = url;
     // the filename you want
-    a.download = "todo-1.json";
+    a.download = "image.png";
     document.body.appendChild(a);
     a.click();
     window.URL.revokeObjectURL(url);
